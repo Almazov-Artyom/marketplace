@@ -1,6 +1,7 @@
 package ru.almaz.authservice.service;
 
 
+import lombok.extern.slf4j.Slf4j;
 import ru.almaz.authservice.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -9,6 +10,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import ru.almaz.authservice.exception.InvalidRefreshTokenException;
+import ru.almaz.authservice.exception.InvalidTokenException;
 
 import javax.crypto.SecretKey;
 import java.time.Duration;
@@ -17,22 +20,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Slf4j
 @Service
 public class JwtService {
     @Value("${spring.jwt.secret}")
     private String secret;
 
-    @Value("${spring.jwt.lifetime}")
-    private Duration lifetime;
+    @Value("${spring.access.jwt.lifetime}")
+    private Duration lifetimeAccessToken;
+
+    @Value("${spring.refresh.jwt.lifetime}")
+    private Duration lifetimeRefreshToken;
+
+
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    private String generateToken(UserDetails userDetails, Duration lifetime) {
+        Map<String, Object> claims = new HashMap<>();
+        if(userDetails instanceof User customUserDetails) {
+            claims.put("id", customUserDetails.getId());
+            claims.put("username", customUserDetails.getUsername());
+            claims.put("email", customUserDetails.getEmail());
+        }
         return Jwts.builder()
-                .claims(extraClaims)
+                .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + lifetime.toMillis()))
@@ -42,15 +57,23 @@ public class JwtService {
 
     private <T> T extractClaims(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
+        log.info(claims.toString());
         return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        log.info("private extract all claims");
+        try{
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        }
+        catch(Exception e){
+            throw new InvalidTokenException("Token is invalid");
+        }
+
     }
 
     private boolean isTokenExpired(String token) {
@@ -61,14 +84,12 @@ public class JwtService {
         return extractClaims(token, Claims::getExpiration);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        if (userDetails instanceof User customUserDetails) {
-            claims.put("id", customUserDetails.getId());
-            claims.put("username", customUserDetails.getUsername());
-            claims.put("email", customUserDetails.getEmail());
-        }
-        return generateToken(claims, userDetails);
+    public String generateAccessToken(UserDetails userDetails) {
+        return generateToken(userDetails,lifetimeAccessToken);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return generateToken(userDetails,lifetimeRefreshToken);
     }
 
     public String extractUserName(String token) {

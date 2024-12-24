@@ -1,9 +1,6 @@
 package ru.almaz.authservice.controller;
 
-import ru.almaz.authservice.dto.JwtAuthenticationResponse;
-import ru.almaz.authservice.dto.SignInRequest;
-import ru.almaz.authservice.dto.SignUpRequest;
-import ru.almaz.authservice.dto.SignUpResponse;
+import ru.almaz.authservice.dto.*;
 import ru.almaz.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +23,12 @@ public class AuthController {
     }
 
     @PostMapping("/sign-in")
-    public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInRequest signInRequest) {
+    public SingInResponse signIn(@RequestBody @Valid SignInRequest signInRequest) {
         return authService.signIn(signInRequest);
+    }
+
+    @PostMapping("/refresh")
+    public RefreshTokenResponse refreshToken(@RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
+        return authService.refreshToken(refreshTokenRequest);
     }
 }

@@ -1,5 +1,6 @@
 package ru.almaz.authservice.filter;
 
+import ru.almaz.authservice.exception.InvalidTokenException;
 import ru.almaz.authservice.service.JwtService;
 import ru.almaz.authservice.service.UserService;
 import jakarta.servlet.FilterChain;
@@ -42,18 +43,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
        }
 
        String token = authHeader.substring(BEARER_PREFIX.length());
-       String userName = jwtService.extractUserName(token);
-       log.info(userName);
-       if(userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-           UserDetails userDetails = userService.getUserByUsername(userName);
-            if(jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
-                log.info(authentication.toString());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+       log.info(token);
+       try {
+           String userName = jwtService.extractUserName(token);
+           log.info(userName);
+           if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+               UserDetails userDetails = userService.getUserByUsername(userName);
+               if (jwtService.isTokenValid(token, userDetails)) {
+                   UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                           userDetails, null, userDetails.getAuthorities()
+                   );
+
+                   log.info(authentication.toString());
+                   SecurityContextHolder.getContext().setAuthentication(authentication);
+               } else
+                   throw new InvalidTokenException("Invalid token");
+           }
+           filterChain.doFilter(request, response);
        }
-       filterChain.doFilter(request, response);
+       catch (InvalidTokenException e) {
+           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+           response.getWriter().write(e.getMessage());
+       }
+
     }
 }

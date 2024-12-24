@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 @Log4j2
 public class MainController {
-    @Value("${spring.jwt.secret}")
-    private String secret;
     @GetMapping("/welcome")
     public String hello() {
         log.info("MainController: hello");

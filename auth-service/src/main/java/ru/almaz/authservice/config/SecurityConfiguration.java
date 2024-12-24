@@ -42,8 +42,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/welcome").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/shop").hasAuthority("ROLE_SELLER")
-                        .requestMatchers("/products").hasAuthority("ROLE_CUSTOMER")
+                        .requestMatchers("/api/shops").hasAuthority("ROLE_SELLER")
+                        .requestMatchers("/api/products").hasAuthority("ROLE_CUSTOMER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -51,9 +51,6 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
-
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
