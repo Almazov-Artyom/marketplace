@@ -18,6 +18,6 @@ public class SignUpRequest {
     @NotBlank(message = "Password cannot be empty")
     private String password;
 
-    @NotNull
+    @NotNull(message = "Role cannot be empty")
     private Role role;
 }

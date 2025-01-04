@@ -71,9 +71,9 @@ public class JwtService {
                     .getPayload();
         }
         catch(Exception e){
-            throw new InvalidTokenException("Token is invalid");
+            log.error(e.getMessage());
+            throw new InvalidTokenException("Invalid token");
         }
-
     }
 
     private boolean isTokenExpired(String token) {

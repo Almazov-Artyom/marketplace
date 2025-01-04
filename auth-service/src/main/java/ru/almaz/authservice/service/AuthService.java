@@ -1,11 +1,13 @@
 package ru.almaz.authservice.service;
 
+import feign.FeignException;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.almaz.authservice.dto.*;
 import ru.almaz.authservice.entity.User;
 import ru.almaz.authservice.exception.InvalidRefreshTokenException;
+import ru.almaz.authservice.exception.UserAlreadyExistException;
 import ru.almaz.authservice.exception.UserUnauthenticatedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,7 +29,14 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public SignUpResponse signUp(SignUpRequest signUpRequest) {
-        userService.isUserExist(signUpRequest);
+        try{
+            userService.isUserExist(signUpRequest);
+        }
+        catch (FeignException.FeignClientException e){
+            throw new UserAlreadyExistException("User already exist");
+        }
+
+
         signUpRequest.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         return userService.createUser(signUpRequest);
     }

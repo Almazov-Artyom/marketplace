@@ -49,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
            log.info(userName);
            if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                UserDetails userDetails = userService.getUserByUsername(userName);
+               log.info("Перед валидацией");
                if (jwtService.isTokenValid(token, userDetails)) {
                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                            userDetails, null, userDetails.getAuthorities()
@@ -63,7 +64,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
        }
        catch (InvalidTokenException e) {
            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-           response.getWriter().write(e.getMessage());
+           response.setContentType("application/json");
+           String json = String.format("{\"status\": 401, \"error\": \"Unauthorized\", \"message\": \"%s\"}", e.getMessage());
+           response.getWriter().write(json);
        }
 
     }
