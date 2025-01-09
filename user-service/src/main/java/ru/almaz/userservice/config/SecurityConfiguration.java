@@ -23,6 +23,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/user/customer").hasAuthority("ROLE_CUSTOMER")
                         .requestMatchers("/api/user/seller").hasAuthority("ROLE_SELLER")
+                        .requestMatchers("/api/user/cart**").hasAuthority("ROLE_CUSTOMER")
                         .anyRequest().permitAll()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

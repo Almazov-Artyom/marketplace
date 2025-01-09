@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.almaz.userservice.dto.UserDto;
 import ru.almaz.userservice.entity.User;
 import ru.almaz.userservice.exception.UserAlreadyExistException;
-import ru.almaz.userservice.exception.UsernameNotFoundException;
+import ru.almaz.userservice.exception.UserNotFoundException;
 import ru.almaz.userservice.mapper.UserMapper;
 import ru.almaz.userservice.repository.UserRepository;
 
@@ -38,7 +38,11 @@ public class UserService {
     @Transactional
     public UserDto getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+                .orElseThrow(() -> new UserNotFoundException("Username not found"));
         return userMapper.userToUserDto(user);
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 }

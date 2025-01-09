@@ -24,6 +24,8 @@ public class ProductEntity {
 
     private Double price;
 
+    private Integer quantity;
+
     @ManyToOne
     @JoinColumn(name = "shop_id")
     private ShopEntity shop;

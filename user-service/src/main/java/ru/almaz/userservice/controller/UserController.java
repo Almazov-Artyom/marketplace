@@ -1,6 +1,8 @@
 package ru.almaz.userservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ru.almaz.userservice.dto.UserDto;
 import ru.almaz.userservice.service.UserService;
@@ -8,6 +10,7 @@ import ru.almaz.userservice.service.UserService;
 @RestController
 @RequestMapping("api/user")
 @RequiredArgsConstructor
+@Log4j2
 public class UserController {
     private final UserService userService;
 
@@ -33,7 +36,9 @@ public class UserController {
 
     @GetMapping("/seller")
     public String seller(){
-        return "Customer";
+        log.info("SellerController");
+        log.info(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        return "Seller";
     }
 
 

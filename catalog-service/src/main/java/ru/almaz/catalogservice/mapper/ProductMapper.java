@@ -10,6 +10,5 @@ import org.mapstruct.MappingConstants;
 public interface ProductMapper {
     @Mapping(target = "shopId", source = "shop.id")
     ProductDto productEntityToProductDto(ProductEntity productEntity);
-    ProductEntity productDtoToProductEntity(ProductDto productDto);
 }
 

@@ -1,5 +1,6 @@
 package ru.almaz.catalogservice.service;
 
+import jakarta.transaction.Transactional;
 import ru.almaz.catalogservice.exception.BadRequestException;
 import ru.almaz.catalogservice.dto.ProductDto;
 import ru.almaz.catalogservice.entity.ProductEntity;
@@ -30,6 +31,7 @@ public class ProductService {
 
     private final ShopService shopService;
 
+    @Transactional
     public ProductDto getProductByIdOrThrow(Long id) {
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(()->new BadRequestException
@@ -37,6 +39,7 @@ public class ProductService {
         return productMapper.productEntityToProductDto(productEntity);
     }
 
+    @Transactional
     public ProductDto addProductAtShop(Long id, ProductDto productDto) {
 
        ShopEntity shopEntity = shopMapper.shopDtoToShopEntity(shopService.getShopByIdOrThrow(id));
@@ -71,11 +74,14 @@ public class ProductService {
 
         description.ifPresent(productEntity::setDescription);
 
+        //TODO: добавить проверку
+        productEntity.setQuantity(productDto.getQuantity());
 
         productRepository.saveAndFlush(productEntity);
         return productMapper.productEntityToProductDto(productEntity);
     }
 
+    @Transactional
     public List<ProductDto> getAllProductsFromShopById(Long id){
         ShopEntity shopEntity = shopMapper.shopDtoToShopEntity(shopService.getShopByIdOrThrow(id));
 //        ShopEntity shopEntity  = shopRepository.findById(id).orElseThrow(()->new BadRequestException("Shop not found"));
@@ -90,6 +96,8 @@ public class ProductService {
         productRepository.deleteById(id);
         return true;
     }
+
+    @Transactional
     public ProductDto updateProductById(Long id, ProductDto productDto) {
         Optional<String> name = Optional.ofNullable(productDto.getName())
                 .filter(productName -> !productName.trim().isEmpty());
@@ -127,6 +135,28 @@ public class ProductService {
         productRepository.saveAndFlush(productEntity);
         return productMapper.productEntityToProductDto(productEntity);
 
+    }
+
+    @Transactional
+    public boolean existById(Long id){
+        return productRepository.existsById(id);
+    }
+
+    @Transactional
+    public ProductDto changeQuantity(Long id, Integer quantity) {
+        ProductEntity product = productRepository.findById(id).
+                orElseThrow(()->new BadRequestException("Product not found"));
+        Integer oldQuantity = product.getQuantity();
+        if(quantity == 0)
+            return productMapper.productEntityToProductDto(product);
+
+        if(quantity < 0){
+            if(Math.abs(quantity) > oldQuantity)
+                throw new BadRequestException("There is no such quantity");
+        }
+        product.setQuantity(oldQuantity + quantity);
+        productRepository.saveAndFlush(product);
+        return productMapper.productEntityToProductDto(product);
     }
 
 }

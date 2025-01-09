@@ -28,21 +28,21 @@ public class UserFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String username = request.getHeader("X-User-Username");
+        String id = request.getHeader("X-User-Id");
 
-        log.info(username);
+        log.info(id);
 
         String role = request.getHeader("X-User-Role");
         log.info(role);
 
-        if(username==null || role == null){
+        if(id==null || role == null){
             filterChain.doFilter(request, response);
             return;
         }
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             List<SimpleGrantedAuthority> authorities = Stream.of(role).map(SimpleGrantedAuthority::new).toList();
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    username, null, authorities);
+                    Long.valueOf(id), null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
         }

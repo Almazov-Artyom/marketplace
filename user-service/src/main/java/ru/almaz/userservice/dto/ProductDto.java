@@ -1,4 +1,4 @@
-package ru.almaz.catalogservice.dto;
+package ru.almaz.userservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

@@ -23,7 +23,7 @@ public class UserInfoService {
             log.info(user.getUsername());
             log.info(user.getRole().toString());
 
-            return new UserInfo(user.getUsername(), user.getRole().toString());
+            return new UserInfo(user.getId(), user.getRole().toString());
         }
         else
             throw new InvalidTokenException("Invalid token");

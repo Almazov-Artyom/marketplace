@@ -45,7 +45,7 @@ public class JwtFilter implements GlobalFilter {
         return authServiceClient.getUserInfo(bearerToken)
                 .flatMap(userInfo -> {
                     ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                            .header("X-User-Username", userInfo.username())
+                            .header("X-User-Id", userInfo.id().toString())
                             .header("X-User-Role", userInfo.role())
                             .build();
 

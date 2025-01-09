@@ -1,7 +1,7 @@
 package ru.almaz.authservice.dto;
 
 public record UserInfo(
-        String username,
+        Long id,
         String role
 ) {
 }
